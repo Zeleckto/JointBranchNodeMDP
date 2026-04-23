@@ -132,7 +132,9 @@ check("BCNodeSelector interface", test_node_selector)
 # ── 7. Data collection (1 instance) ──────────────────────────────────────────
 import config as cfg
 _orig_k = cfg.K_EXPLORE
-cfg.K_EXPLORE = 3
+_orig_t = cfg.SCIP_TIME_LIMIT
+cfg.K_EXPLORE = 1         # only 1 sub-solve so it completes fast
+cfg.SCIP_TIME_LIMIT = 5   # 5 second cap per sub-solve
 
 from training.data_collector import collect_data_from_instance, collect_dataset, load_dataset
 
@@ -144,8 +146,9 @@ def test_data_collection():
     assert isinstance(lt, list)
     assert isinstance(sb, list)
 
-check("data collection (1 instance, K=3)", test_data_collection)
+check("data collection (1 instance, K=1, 5s limit)", test_data_collection)
 cfg.K_EXPLORE = _orig_k
+cfg.SCIP_TIME_LIMIT = _orig_t
 
 # ── 8+9. Reward assignment and π2 dataset ────────────────────────────────────
 from training.reward_assigner import (

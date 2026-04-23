@@ -120,8 +120,11 @@ def extract_bipartite_graph(model):
 
     # Build priority candidate set (npriocands)
     try:
-        prio_vars = {v.name for v in model.getPrioChildren()[0]}
-    except Exception:
+        # getPrioChildren may not exist in all PySCIPOpt versions
+        result = model.getPrioChildren()
+        prio_vars = {v.name for v in result[0]} if result else set()
+    except (AttributeError, Exception):
+        # Fallback: use all fractional variables as candidates
         prio_vars = set()
 
     for j, col in enumerate(cols):
@@ -133,7 +136,17 @@ def extract_bipartite_graph(model):
         lb       = col.getLb()
         ub       = col.getUb()
         obj_c    = col.getObjCoeff()
-        rc       = col.getRedcost()
+        # getRedcost() not available on Column in PySCIPOpt 6.x
+        rc = 0.0
+        try:
+            rc = var.getRedcost()
+        except AttributeError:
+            try:
+                rc = model.getVarRedcost(var)
+            except Exception:
+                rc = 0.0
+        except Exception:
+            rc = 0.0
         basis    = col.getBasisStatus()
 
         vtype = var.vtype()
@@ -243,6 +256,11 @@ def extract_pi2_features(var, model):
 
     try:
         rc = var.getRedcost()
+    except AttributeError:
+        try:
+            rc = model.getVarRedcost(var)
+        except Exception:
+            rc = 0.0
     except Exception:
         rc = 0.0
 
@@ -312,14 +330,21 @@ def get_prenorm_stats(feature_dicts):
 
     all_con = clean(np.concatenate([d["con_feats"] for d in feature_dicts], axis=0))
     all_var = clean(np.concatenate([d["var_feats"] for d in feature_dicts], axis=0))
-    all_edg = clean(np.concatenate([d["edge_feats"] for d in feature_dicts], axis=0))
+    edge_list = [d["edge_feats"] for d in feature_dicts if len(d["edge_feats"]) > 0]
+    if edge_list:
+        all_edg = clean(np.concatenate(edge_list, axis=0))
+        edg_mean = all_edg.mean(0).astype(np.float32)
+        edg_std  = np.maximum(all_edg.std(0), 1e-4).astype(np.float32)
+    else:
+        edg_mean = np.zeros(1, dtype=np.float32)
+        edg_std  = np.ones(1,  dtype=np.float32)
 
     return {
         "con_mean":      all_con.mean(0).astype(np.float32),
         "con_std":       np.maximum(all_con.std(0), 1e-4).astype(np.float32),
         "var_mean":      all_var.mean(0).astype(np.float32),
         "var_std":       np.maximum(all_var.std(0), 1e-4).astype(np.float32),
-        "edg_mean":      all_edg.mean(0).astype(np.float32),
-        "edg_std":       np.maximum(all_edg.std(0), 1e-4).astype(np.float32),
+        "edg_mean":      edg_mean,
+        "edg_std":       edg_std,
         "sample_graphs": feature_dicts,
     }

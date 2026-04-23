@@ -239,6 +239,9 @@ def train_pi2(feats: np.ndarray, labels: np.ndarray, checkpoint_path: str,
 
     # Save norm stats
     norm_path = checkpoint_path.replace('.pt', '_norm.npy')
+    norm_dir  = os.path.dirname(norm_path)
+    if norm_dir:
+        os.makedirs(norm_dir, exist_ok=True)
     np.save(norm_path, np.stack([mean, std]))
     print(f"  Saved π2 norm stats → {norm_path}")
 
