@@ -21,7 +21,7 @@ RESULTS_DIR   = "results"
 
 # ── Data Collection ───────────────────────────────────────────────────────────
 K_EXPLORE        = 3          # sub-solves per node (paper: 30, fast test: 3)
-SCIP_TIME_LIMIT  = 120        # seconds per sub-solve (paper: 3600, fast: 120)
+SCIP_TIME_LIMIT  = 15      # seconds per sub-solve (paper: 3600, fast: 120)
 N_TRAIN_SAMPLES  = 5_000      # max training samples (paper: 50000, fast: 5000)
 COLLECT_EVERY    = 5          # checkpoint every N instances during collection
 
@@ -48,8 +48,8 @@ GCN_LAYERS          = 1
 GCN_LR            = 1e-3
 GCN_WEIGHT_DECAY  = 1e-4
 GCN_BATCH_SIZE    = 32
-GCN_MAX_EPOCHS    = 30        # paper: 1000
-GCN_STOP_PATIENCE = 10        # paper: 20
+GCN_MAX_EPOCHS    = 1000        # paper: 1000
+GCN_STOP_PATIENCE = 20        # paper: 20
 
 # ── NodeChildMLP (π2) ─────────────────────────────────────────────────────────
 PI2_INPUT_DIM    = 9          # 9 hand-crafted features of x*

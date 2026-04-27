@@ -8,7 +8,7 @@ Inputs:  9 hand-crafted features of the chosen variable x*
           at_lb, n_cons_norm, avg_coeff_norm]
 
 Output:  scalar logit → sigmoid → P(prefer LEFT child)
-         > 0.5 → go LEFT first (x* ≤ floor)
+         >= 0.5 → go LEFT first (x* ≤ floor)  [default when P=0.5]
          ≤ 0.5 → go RIGHT first (x* ≥ ceil)
 
 Training: binary cross-entropy (imitation learning on L/R labels)
@@ -56,7 +56,7 @@ class NodeChildMLP(nn.Module):
         with torch.no_grad():
             t     = torch.from_numpy(feat_np.reshape(1, -1)).float()
             logit = self.forward(t)
-            return torch.sigmoid(logit).item() > 0.5
+            return torch.sigmoid(logit).item() >= 0.5  # tie-break: default LEFT
 
 
 class NodeChildTrainer:
