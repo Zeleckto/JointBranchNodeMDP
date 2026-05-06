@@ -234,16 +234,25 @@ class DataCollectionBranchRule(Branchrule):
             feat_pi2 = None
 
         # ── Finalise long-term samples ────────────────────────────────────────
-        returns = [rollout_results[name]['return'] for name, _ in lt_group]
+        # Store y_LR for ALL K sampled variables — not just committed one.
+        # n_left and n_right are already computed for every variable in rollout_results.
+        # This gives ~K× more π2 training data at zero additional computation cost.
         lt_samples = []
+        exp_var_map = {v.name: v for v in exp_vars}
         for name, sample in lt_group:
             r = rollout_results[name]
             sample.trajectory_return = r['return']
-            if name == best_name:
-                sample.n_left   = n_left_best
-                sample.n_right  = n_right_best
-                sample.y_LR     = y_LR
-                sample.feat_pi2 = feat_pi2
+            nl = r['n_left']
+            nr = r['n_right']
+            sample.n_left  = nl
+            sample.n_right = nr
+            sample.y_LR    = (1 if nl < nr else 0) if nl != nr else None
+            try:
+                var_obj = exp_var_map.get(name)
+                if var_obj is not None:
+                    sample.feat_pi2 = extract_pi2_features(var_obj, model)
+            except Exception:
+                sample.feat_pi2 = None
             lt_samples.append(sample)
 
         if self.use_long_term:

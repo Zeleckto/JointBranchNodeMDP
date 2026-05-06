@@ -48,8 +48,8 @@ GCN_LAYERS          = 1
 GCN_LR            = 1e-3
 GCN_WEIGHT_DECAY  = 1e-4
 GCN_BATCH_SIZE    = 32
-GCN_MAX_EPOCHS    = 1000        # paper: 1000
-GCN_STOP_PATIENCE = 20        # paper: 20
+GCN_MAX_EPOCHS    = 10        # paper: 1000
+GCN_STOP_PATIENCE = 3        # paper: 20
 
 # ── NodeChildMLP (π2) ─────────────────────────────────────────────────────────
 PI2_INPUT_DIM    = 9          # 9 hand-crafted features of x*
